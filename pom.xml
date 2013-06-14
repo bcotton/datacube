@@ -129,7 +129,21 @@
         <hadoopVersion>1.0.3</hadoopVersion>
       </properties>
     </profile>
-    
+
+    <profile>
+      <!-- Set hadoopVersion if not specified on the command line -->
+      <id>set_default_core_hadoop_version</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+        <property>
+          <name>!hadoopCoreVersion</name>
+        </property>
+      </activation>
+      <properties>
+        <hadoopVersion>1.0.3</hadoopVersion>
+      </properties>
+    </profile>
+
     <!--  We want to be able to deploy artifacts with various classifiers. We want
           a different classifier for each combination of hbaseVersion and hadoopVersion.
           We also need to be able to produce an artifact with no classifier, which will
@@ -152,7 +166,7 @@
             <extensions>false</extensions>
             <inherited>true</inherited>
             <configuration>
-              <classifier>hbase${hbaseVersion}-hadoop${hadoopVersion}</classifier>
+              <classifier>hbase${hbaseVersion}-hadoopCore${hadoopCoreVersion}-hadoop${hadoopVersion}</classifier>
             </configuration>
           </plugin>
         </plugins>
@@ -176,13 +190,37 @@
             <extensions>false</extensions>
             <inherited>true</inherited>
             <configuration>
-              <classifier>hbase${hbaseVersion}-hadoop${hadoopVersion}</classifier>
+                <classifier>hbase${hbaseVersion}-hadoopCore${hadoopCoreVersion}-hadoop${hadoopVersion}</classifier>
             </configuration>
           </plugin>
         </plugins>
       </build>
     </profile>
-    
+
+    <profile>
+      <id>set-classifier-since-hadoopCoreVersion-set-manually</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+        <property>
+          <name>hadoopCoreVersion</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>2.4</version>
+            <extensions>false</extensions>
+            <inherited>true</inherited>
+            <configuration>
+                <classifier>hbase${hbaseVersion}-hadoopCore${hadoopCoreVersion}-hadoop${hadoopVersion}</classifier>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <profile>
       <!-- GPG sign release artifacts. Copied from:
       https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven -->
@@ -285,13 +323,34 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-test</artifactId>
-      <version>${hadoopVersion}</version>
+      <version>${hadoopCoreVersion}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-minicluster</artifactId>
+      <version>${hadoopCoreVersion}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
+      <version>${hadoopCoreVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoopVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
       <version>${hadoopVersion}</version>
       <scope>provided</scope>
     </dependency>
